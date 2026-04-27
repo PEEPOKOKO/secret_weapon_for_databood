@@ -1,0 +1,75 @@
+CREATE VIEW loan_view AS
+SELECT branch_name, SUM(amount)
+from loan 
+group by branch_name
+having sum(amount) > 3000 ; 
+
+# 1 : select * from loan_view
+
+create view join_view as 
+select account.account_number , account.branch_name , account.balance , customer.customer_name 
+from account inner join depositor on account.account_number = depositor.account_number 
+inner join customer on customer.customer_name = depositor.customer_name 
+where account.branch_name = 'SUT' 
+order by account.account_number   ; 
+
+#  2 : select * from join_view 
+
+
+create view account_view as 
+select * from account 
+where account.balance < 200
+with check option ; 
+
+# 3 : select * from account_view ;
+
+# 4 : INSERT INTO account_view VALUES(4, 'SUT', 500);
+
+delimiter //
+create procedure transfer_money  (
+in amount_tranfer float ,
+in from_acc_num int ,
+in to_acc_num int 
+)
+begin 
+ declare errorStatus boolean default false ;
+ start transaction ;
+	begin 
+		declare exit handler for not found set  errorStatus = TRUE ; 
+        end ; 
+	if errorStatus = TRUE then 
+		rollback;
+	else 
+		commit ;
+	end if ;
+    end // 
+    
+ call  transfer_money(10, 1, 8); 
+ 
+ delimiter //
+ create procedure loan_money (
+ in loan_number int ,
+ in b_name char(9),
+ in amount float ,
+ in customer_name char(9),
+ in acc_number int 
+ )
+ begin 
+	declare errorStatus boolean default false ;
+    start transaction;
+		begin 
+         declare exit handler for not found set errorStatus = true ;
+         end;
+         if errorStatus = true then 
+			rollback;
+		 else 
+			commit ;
+		end if ;
+	end//
+ 
+ call loan_money(103,'SUT',20000,'Som',1);
+ 
+call loan_money(104,'SUT',20000,'Som',5);
+ 
+ 
+ 
